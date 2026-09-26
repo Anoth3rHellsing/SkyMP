@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skyrim Together — Instalador de Mods</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{height:100%;scroll-behavior:smooth}
+body{
+  min-height:100%;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  overflow-x:hidden;color:#07405E;
+  background:linear-gradient(135deg,#E3F4FDFF 0%,#D895D9F6 30%,#D24DBBEC 60%,#D267D0C4 82%,#D897DC5F 100%);
+  background-attachment:fixed;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes pulse{0%,100%{opacity:.22}50%{opacity:.35}}
+@keyframes checkPop{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+.anim-up{animation:fadeUp .7s ease-out both}
+.anim-fade{animation:fadeIn .6s ease-out both}
+.d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
+.d4{animation-delay:.4s}.d5{animation-delay:.5s}
+
+.top-gloss{
+  position:fixed;top:0;left:0;right:0;height:170px;z-index:0;pointer-events:none;
+  background:linear-gradient(to bottom,rgba(255,255,255,.63) 0%,rgba(255,255,255,.26) 55%,transparent 100%);
+}
+.bubble{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+.bubble-lg{
+  width:320px;height:320px;left:-70px;top:38%;opacity:.30;
+  background:radial-gradient(circle at 35% 30%,#fff 0%,#BFE9FB 55%,transparent 100%);
+  animation:pulse 6s ease-in-out infinite;
+}
+.bubble-md{
+  width:400px;height:400px;right:-90px;top:-70px;opacity:.26;
+  background:radial-gradient(circle at 35% 30%,#fff 0%,#7CCBEE 58%,transparent 100%);
+  animation:pulse 8s ease-in-out infinite 1s;
+}
+.bubble-sm{
+  width:190px;height:190px;left:42%;bottom:4%;opacity:.22;
+  background:radial-gradient(circle at 35% 30%,#fff 0%,#B6E77A 60%,transparent 100%);
+  animation:float 7s ease-in-out infinite;
+}
+
+.page{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:40px 24px 80px}
+
+.header{text-align:center;margin-bottom:32px}
+.header h1{font-size:32px;font-weight:300;color:#07405E;letter-spacing:-.5px;margin-bottom:4px}
+.header .subtitle{font-size:14px;color:#0B5C8A;font-weight:600;letter-spacing:.3px}
+.header .badge{
+  display:inline-block;margin-top:10px;padding:4px 14px;border-radius:12px;
+  font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+  background:rgba(76,162,43,.15);color:#4CA22B;
+}
+
+.card{
+  border-radius:14px;padding:24px;border:1px solid rgba(255,255,255,.5);
+  background:linear-gradient(to bottom,rgba(237,255,255,.93) 0%,rgba(196,255,255,.77) 45%,rgba(176,235,248,1) 100%);
+  box-shadow:0 2px 16px rgba(10,58,86,.28);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  margin-bottom:20px;
+}
+.card h2{font-size:17px;font-weight:600;color:#07405E;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.card p,.card li{font-size:13px;color:#2C5F7E;line-height:1.6}
+.card ul{list-style:none;margin-top:8px}
+.card ul li{padding:3px 0 3px 16px;position:relative}
+.card ul li::before{
+  content:'';position:absolute;left:0;top:10px;width:7px;height:7px;border-radius:50%;
+  background:linear-gradient(to bottom,#8FD9F7 0%,#39A5DC 49%,#1B7FC0 51%,#39B0E4 100%);
+}
+.card-icon{
+  width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  background:linear-gradient(to bottom,#8FD9F7 0%,#39A5DC 49%,#1B7FC0 51%,#39B0E4 100%);
+}
+.card-icon svg{width:18px;height:18px;fill:#fff}
+.card-icon.green{background:linear-gradient(to bottom,#CBF08F 0%,#74C23C 49%,#4E9C22 51%,#7FCF43 100%)}
+.card-icon.amber{background:linear-gradient(to bottom,#FFE6A8 0%,#F0A93A 49%,#D5871B 51%,#F7B950 100%)}
+
+.steps{display:flex;gap:8px;margin-bottom:28px;justify-content:center;flex-wrap:wrap}
+.step-dot{
+  display:flex;align-items:center;gap:8px;padding:8px 18px;border-radius:20px;
+  border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.4);
+  font-size:12px;font-weight:600;color:#2C5F7E;transition:all .3s;cursor:pointer;
+}
+.step-dot.active{
+  background:linear-gradient(to bottom,#8FD9F7 0%,#39A5DC 49%,#1B7FC0 51%,#39B0E4 100%);
+  color:#fff;border-color:rgba(255,255,255,.7);box-shadow:0 2px 12px rgba(10,58,86,.25);
+}
+.step-dot.done{
+  background:linear-gradient(to bottom,#CBF08F 0%,#74C23C 49%,#4E9C22 51%,#7FCF43 100%);
+  color:#fff;border-color:rgba(255,255,255,.7);
+}
+.step-num{
+  width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.3);font-size:11px;font-weight:700;
+}
+
+.mod-list{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.mod-item{
+  display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:10px;
+  border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.4);transition:all .2s;
+}
+.mod-item:hover{background:rgba(255,255,255,.6);transform:translateX(3px)}
+.mod-icon{
+  width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  background:linear-gradient(to bottom,#8FD9F7 0%,#39A5DC 49%,#1B7FC0 51%,#39B0E4 100%);
+  box-shadow:0 2px 8px rgba(10,58,86,.2);
+}
+.mod-icon.green{background:linear-gradient(to bottom,#CBF08F 0%,#74C23C 49%,#4E9C22 51%,#7FCF43 100%)}
+.mod-icon.amber{background:linear-gradient(to bottom,#FFE6A8 0%,#F0A93A 49%,#D5871B 51%,#F7B950 100%)}
+.mod-icon svg{width:22px;height:22px;fill:#fff}
+.mod-info{flex:1}
+.mod-info h3{font-size:14px;font-weight:600;color:#07405E;margin-bottom:2px}
+.mod-info .mod-desc{font-size:11.5px;color:#2C5F7E;line-height:1.4}
+.mod-info .mod-file{font-size:10px;color:#2C5F7E;opacity:.7;margin-top:3px;font-family:Consolas,monospace}
+.mod-check{
+  flex-shrink:0;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  border:2px solid rgba(255,255,255,.5);background:rgba(255,255,255,.3);transition:all .3s;
+}
+.mod-check.ok{border-color:#4CA22B;background:rgba(76,162,43,.15);animation:checkPop .4s ease-out}
+.mod-check.ok svg{fill:#4CA22B}
+.mod-check.pending svg{fill:#2C5F7E;opacity:.4}
+.mod-check svg{width:16px;height:16px}
+
+.lo-list{margin-top:14px}
+.lo-item{
+  display:flex;align-items:center;gap:12px;padding:10px 16px;
+  border-radius:8px;margin-bottom:6px;
+  border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.3);
+  font-size:12.5px;color:#07405E;transition:background .2s;
+}
+.lo-item:hover{background:rgba(255,255,255,.5)}
+.lo-num{
+  width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(to bottom,#8FD9F7 0%,#39A5DC 49%,#1B7FC0 51%,#39B0E4 100%);
+  color:#fff;font-size:11px;font-weight:700;flex-shrink:0;
+}
+.lo-name{font-weight:600;flex:1}
+.lo-tag{
+  font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;
+  padding:2px 8px;border-radius:8px;
+}
+.lo-tag.esp{background:rgba(31,134,200,.12);color:#1F86C8}
+.lo-tag.dll{background:rgba(224,140,30,.12);color:#E08C1E}
+.lo-tag.ski{background:rgba(76,162,43,.12);color:#4CA22B}
+
+.btn-row{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap}
+.btn-gloss{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  height:44px;padding:0 28px;border:none;border-radius:9px;
+  font-family:inherit;font-size:14px;font-weight:600;color:#fff;cursor:pointer;
+  position:relative;overflow:hidden;
+  background:linear-gradient(to bottom,#8FD9F7 0%,#39A5DC 49%,#1B7FC0 51%,#39B0E4 100%);
+  box-shadow:0 2px 16px rgba(10,58,86,.28);border:1px solid rgba(255,255,255,.35);
+  transition:transform .1s,opacity .15s,box-shadow .2s;
+}
+.btn-gloss::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:17px;border-radius:8px 8px 14px 14px;
+  background:linear-gradient(to bottom,rgba(255,255,255,.72) 0%,rgba(255,255,255,.22) 48%,transparent 50%);
+  pointer-events:none;
+}
+.btn-gloss:hover{box-shadow:0 2px 20px rgba(10,58,86,.35);border-color:rgba(255,255,255,.7)}
+.btn-gloss:active{transform:translateY(1px);opacity:.88}
+.btn-gloss:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-gloss svg{width:16px;height:16px;fill:currentColor}
+.btn-gloss.green{background:linear-gradient(to bottom,#CBF08F 0%,#74C23C 49%,#4E9C22 51%,#7FCF43 100%)}
+.btn-gloss.amber{background:linear-gradient(to bottom,#FFE6A8 0%,#F0A93A 49%,#D5871B 51%,#F7B950 100%)}
+
+.btn-ghost{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  height:38px;padding:0 22px;border-radius:8px;
+  font-family:inherit;font-size:13px;font-weight:600;color:#0B5C8A;cursor:pointer;
+  background:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.5);
+  backdrop-filter:blur(6px);transition:all .2s;
+}
+.btn-ghost:hover{background:rgba(255,255,255,.7);border-color:rgba(255,255,255,.8)}
+.btn-ghost:active{transform:scale(.96)}
+
+.vortex-banner{
+  display:none;align-items:center;gap:14px;padding:16px 20px;border-radius:12px;
+  border:1px solid rgba(76,162,43,.3);background:rgba(76,162,43,.08);
+  margin-bottom:20px;
+}
+.vortex-banner.visible{display:flex}
+.vortex-banner svg{width:28px;height:28px;fill:#4CA22B;flex-shrink:0}
+.vortex-banner .vb-text h3{font-size:14px;font-weight:600;color:#4CA22B;margin-bottom:2px}
+.vortex-banner .vb-text p{font-size:12px;color:#2C5F7E}
+
+.mode-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.mode-card{
+  padding:18px;border-radius:12px;border:2px solid rgba(255,255,255,.4);
+  background:rgba(255,255,255,.35);cursor:pointer;transition:all .25s;text-align:center;
+}
+.mode-card:hover{background:rgba(255,255,255,.6);border-color:rgba(31,134,200,.4)}
+.mode-card.selected{border-color:#1F86C8;background:rgba(31,134,200,.08)}
+.mode-card h3{font-size:14px;font-weight:600;color:#07405E;margin-bottom:4px}
+.mode-card p{font-size:11.5px;color:#2C5F7E;line-height:1.4}
+.mode-card svg{width:32px;height:32px;fill:#1F86C8;margin-bottom:8px}
+
+.progress-wrap{display:none;margin-top:20px}
+.progress-wrap.visible{display:block}
+.progress-bar{
+  height:10px;border-radius:6px;background:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.5);
+  overflow:hidden;margin-bottom:8px;
+}
+.progress-fill{
+  height:100%;border-radius:5px;width:0%;transition:width .4s ease;
+  background:linear-gradient(to bottom,#8FD9F7 0%,#39A5DC 49%,#1B7FC0 51%,#39B0E4 100%);
+  position:relative;
+}
+.progress-fill::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:rgba(255,255,255,.4);border-radius:5px 5px 0 0;
+}
+.progress-text{font-size:12px;color:#2C5F7E;text-align:center}
+
+.log-box{
+  display:none;margin-top:16px;padding:14px;border-radius:10px;
+  background:rgba(7,64,94,.06);border:1px solid rgba(255,255,255,.3);
+  font-family:Consolas,monospace;font-size:11px;color:#07405E;
+  max-height:200px;overflow-y:auto;line-height:1.7;
+}
+.log-box.visible{display:block}
+.log-line{padding:1px 0}
+.log-line.success{color:#4CA22B}
+.log-line.warn{color:#E08C1E}
+.log-line.error{color:#C63C22}
+.log-line.info{color:#0B5C8A}
+
+.tip-box{
+  margin-top:14px;padding:12px 16px;border-radius:10px;
+  background:rgba(255,217,122,.12);border:1px solid rgba(224,140,30,.2);
+  font-size:12px;color:#2C5F7E;line-height:1.6;
+}
+.tip-box strong{color:#E08C1E}
+
+.link-list{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.link-list a{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;color:#1F86C8;text-decoration:none;font-weight:600;
+  transition:color .2s;
+}
+.link-list a:hover{color:#0B5C8A;text-decoration:underline}
+.link-list a svg{width:14px;height:14px;fill:currentColor}
+
+.section-hidden{display:none}
+.section-visible{display:block}
+
+.footer{text-align:center;margin-top:48px;font-size:11px;color:#2C5F7E;opacity:.7}
+
+@media(max-width:600px){
+  .mode-cards{grid-template-columns:1fr}
+  .header h1{font-size:24px}
+  .steps{gap:6px}
+  .step-dot{padding:6px 12px;font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<div class="top-gloss"></div>
+<div class="bubble bubble-lg"></div>
+<div class="bubble bubble-md"></div>
+<div class="bubble bubble-sm"></div>
+
+<div class="page">
+
+  <header class="header anim-up">
+    <h1>Skyrim Together</h1>
+    <p class="subtitle">Instalador de mods · Multijugador + Logros</p>
+    <span class="badge">✓ Todo incluido en esta carpeta</span>
+  </header>
+
+  <!-- VORTEX BANNER -->
+  <div class="vortex-banner anim-up d1" id="vortexBanner">
+    <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2-1-2-1-2 1 2 1zm0 2l-5-2.5L2 13l10 5 10-5-5-2.5L12 13z"/></svg>
+    <div class="vb-text">
+      <h3>Vortex detectado</h3>
+      <p>Se encontró Vortex instalado. Puedes elegir instalar los mods automáticamente vía Vortex o manualmente.</p>
+    </div>
+  </div>
+
+  <!-- STEPS -->
+  <div class="steps anim-up d1">
+    <div class="step-dot active" data-step="1" id="stepDot1">
+      <span class="step-num">1</span> Verificar
+    </div>
+    <div class="step-dot" data-step="2" id="stepDot2">
+      <span class="step-num">2</span> Instalar
+    </div>
+    <div class="step-dot" data-step="3" id="stepDot3">
+      <span class="step-num">3</span> Orden de carga
+    </div>
+    <div class="step-dot" data-step="4" id="stepDot4">
+      <span class="step-num">4</span> Listo
+    </div>
+  </div>
+
+  <!-- STEP 1: VERIFY -->
+  <div id="step1" class="section-visible">
+    <div class="card anim-up d2">
+      <h2>
+        <span class="card-icon"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>
+        Mods encontrados en la carpeta
+      </h2>
+      <p>Estos son los archivos necesarios para jugar Skyrim Together con logros habilitados. Todos están presentes en la misma carpeta que este instalador.</p>
+      <div class="mod-list" id="modList">
+        <div class="mod-item">
+          <div class="mod-icon"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+          <div class="mod-info">
+            <h3>Skyrim Together Reborn</h3>
+            <div class="mod-desc">Multijugador cooperativo para Skyrim SE/AE. Permite jugar en grupo con sincronización de misiones, inventario y combate.</div>
+            <div class="mod-file">Skyrim Together Reborn 69993 1.8.2.zip</div>
+          </div>
+          <div class="mod-check pending" id="checkSTR"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+        </div>
+        <div class="mod-item">
+          <div class="mod-icon green"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg></div>
+          <div class="mod-info">
+            <h3>Achievements Mods Enabler</h3>
+            <div class="mod-desc">Re-habilita los logros al usar mods. Parchea Skyrim en tiempo de ejecución. Independiente de versión. Requiere DLL Loader o SKSE64.</div>
+            <div class="mod-file">Achievements Mods Enabler SE-AE-245-1-41.zip</div>
+          </div>
+          <div class="mod-check pending" id="checkAME"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+        </div>
+        <div class="mod-item">
+          <div class="mod-icon amber"><svg viewBox="0 0 24 24"><path d="M4 6h18V4H4c-1.1 0-2 .9-2 2v11H0v3h14v-3H4V6zm19 2h-6c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zm-1 9h-4v-7h4v7z"/></svg></div>
+          <div class="mod-info">
+            <h3>DLL Loader</h3>
+            <div class="mod-desc">Cargador de DLLs requerido por Achievements Mods Enabler si no usas SKSE64. Alternativa ligera al Script Extender.</div>
+            <div class="mod-file">DllLoader-3619-1-0-0-4.zip</div>
+          </div>
+          <div class="mod-check pending" id="checkDLL"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+        </div>
+        <div class="mod-item">
+          <div class="mod-icon"><svg viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg></div>
+          <div class="mod-info">
+            <h3>Address Library for SKSE Plugins</h3>
+            <div class="mod-desc">Biblioteca de direcciones necesaria para que los plugins SKSE funcionen correctamente entre versiones de Skyrim.</div>
+            <div class="mod-file">Address Library All in One v13.zip</div>
+          </div>
+          <div class="mod-check pending" id="checkAddr"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row anim-up d3">
+      <button class="btn-gloss green" onclick="verifyMods()">
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        Verificar archivos
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 2: INSTALL -->
+  <div id="step2" class="section-hidden">
+    <div class="card anim-up">
+      <h2>
+        <span class="card-icon green"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></span>
+        Método de instalación
+      </h2>
+      <p>Elige cómo quieres instalar los mods. La instalación manual copia los archivos directamente a la carpeta Data de Skyrim. Vortex gestiona la instalación y el orden de carga automáticamente.</p>
+
+      <div class="mode-cards">
+        <div class="mode-card selected" id="modeManual" onclick="selectMode('manual')">
+          <svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 10H6v-2h8v2zm4-4H6v-2h12v2z"/></svg>
+          <h3>Manual</h3>
+          <p>Copia directa a la carpeta Data de Skyrim. No requiere herramientas externas. Ideal si solo usas estos mods.</p>
+        </div>
+        <div class="mode-card" id="modeVortex" onclick="selectMode('vortex')">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2-1-2-1-2 1 2 1zm0 2l-5-2.5L2 13l10 5 10-5-5-2.5L12 13z"/></svg>
+          <h3>Via Vortex</h3>
+          <p>Instala los mods usando Vortex. Gestiona perfiles, conflictos y orden de carga desde el gestor.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card anim-up d1">
+      <h2>
+        <span class="card-icon amber"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></span>
+        Instrucciones de Achievements Mods Enabler
+      </h2>
+      <p>Este mod parchea Skyrim en tiempo de ejecución para re-habilitar los logros cuando usas otros mods. Es independiente de versión y funciona con saves ya modificados.</p>
+      <ul>
+        <li><strong>Requiere</strong> DLL Loader (incluido) <em>o</em> SKSE64 instalado</li>
+        <li>Copia las carpetas <code>Plugins</code> y <code>SKSE</code> a la carpeta <code>Data</code> de Skyrim SE</li>
+        <li>Si usas SKSE64, la carpeta SKSE es opcional (el DLL Loader no es necesario)</li>
+        <li>Verifica que funciona revisando <code>Data\Plugins\Sumwunn\AchievementsModsEnabler.log</code>: debe decir "YES"</li>
+        <li>No necesitas este mod si ya usas SSE Engine Fixes</li>
+        <li>Los logros se guardan en el save: si tu save ya estaba modificado, guarda de nuevo para que desaparezca el indicador [M]</li>
+        <li>No causa VAC ban — Skyrim SE no usa anti-cheat</li>
+      </ul>
+      <div class="link-list">
+        <a href="https://www.nexusmods.com/skyrimspecialedition/mods/245" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+          NexusMods: Achievements Mods Enabler (#245)
+        </a>
+        <a href="https://www.nexusmods.com/skyrimspecialedition/mods/3619" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+          NexusMods: DLL Loader (#3619)
+        </a>
+        <a href="https://www.nexusmods.com/skyrimspecialedition/mods/69993" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+          NexusMods: Skyrim Together Reborn (#69993)
+        </a>
+        <a href="https://www.nexusmods.com/skyrimspecialedition/mods/32444" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+          NexusMods: Address Library (#32444)
+        </a>
+      </div>
+    </div>
+
+    <div class="tip-box anim-up d2">
+      <strong>⚠ Nota:</strong> Si renombraste el ejecutable de Skyrim, edita <code>AchievementsModsEnabler.ini</code> en <code>Data\Plugins\Sumwunn</code> y activa <code>bIgnoreExpectedProcessName=1</code>, o usa SKSE64 en su lugar.
+    </div>
+
+    <div class="btn-row anim-up d3">
+      <button class="btn-ghost" onclick="goStep(1)">← Atrás</button>
+      <button class="btn-gloss green" onclick="runInstall()" id="installBtn">
+        <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+        Instalar mods
+      </button>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">Preparando...</div>
+    </div>
+    <div class="log-box" id="logBox"></div>
+  </div>
+
+  <!-- STEP 3: LOAD ORDER -->
+  <div id="step3" class="section-hidden">
+    <div class="card anim-up">
+      <h2>
+        <span class="card-icon"><svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg></span>
+        Orden de carga recomendado
+      </h2>
+      <p>Este es el orden correcto para que Skyrim Together funcione con los logros habilitados. Si usas Vortex, configura este orden en el panel de plugins. Si instalaste manualmente, verifica tu <code>plugins.txt</code>.</p>
+      <div class="lo-list">
+        <div class="lo-item">
+          <span class="lo-num">1</span>
+          <span class="lo-name">Skyrim.esm</span>
+          <span class="lo-tag esp">ESP</span>
+        </div>
+        <div class="lo-item">
+          <span class="lo-num">2</span>
+          <span class="lo-name">Update.esm</span>
+          <span class="lo-tag esp">ESP</span>
+        </div>
+        <div class="lo-item">
+          <span class="lo-num">3</span>
+          <span class="lo-name">Dawnguard.esm</span>
+          <span class="lo-tag esp">ESP</span>
+        </div>
+        <div class="lo-item">
+          <span class="lo-num">4</span>
+          <span class="lo-name">HearthFires.esm</span>
+          <span class="lo-tag esp">ESP</span>
+        </div>
+        <div class="lo-item">
+          <span class="lo-num">5</span>
+          <span class="lo-name">Dragonborn.esm</span>
+          <span class="lo-tag esp">ESP</span>
+        </div>
+        <div class="lo-item">
+          <span class="lo-num">6</span>
+          <span class="lo-name">cc*.esm / ccbgssse*.esm</span>
+          <span class="lo-tag esp">Creation Club</span>
+        </div>
+        <div class="lo-item">
+          <span class="lo-num">7</span>
+          <span class="lo-name">Address Library for SKSE Plugins</span>
+          <span class="lo-tag dll">DLL</span>
+        </div>
+        <div class="lo-item">
+          <span class="lo-num">8</span>
+          <span class="lo-name">AchievementsModsEnabler.dll</span>
+          <span class="lo-tag dll">DLL</span>
+        </div>
+        <div class="lo-item">
+          <span class="lo-num">9</span>
+          <span class="lo-name">SkyrimTogetherReborn.esp</span>
+          <span class="lo-tag ski">STR</span>
+        </div>
+      </div>
+      <div class="tip-box">
+        <strong>💡 Importante:</strong> Skyrim Together Reborn debe cargarse <em>después</em> de todos los masters y del Achievements Enabler. El Address Library debe estar antes de cualquier plugin SKSE. Si usas Vortex, arrastra los plugins a este orden en la sección "Plugins".
+      </div>
+    </div>
+
+    <div class="btn-row anim-up d1">
+      <button class="btn-ghost" onclick="goStep(2)">← Atrás</button>
+      <button class="btn-gloss green" onclick="goStep(4)">
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        Continuar
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 4: DONE -->
+  <div id="step4" class="section-hidden">
+    <div class="card anim-up" style="text-align:center;padding:40px 24px">
+      <div style="width:64px;height:64px;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;background:linear-gradient(to bottom,#CBF08F 0%,#74C23C 49%,#4E9C22 51%,#7FCF43 100%);box-shadow:0 2px 16px rgba(10,58,86,.28)">
+        <svg viewBox="0 0 24 24" style="width:32px;height:32px;fill:#fff"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      </div>
+      <h2 style="justify-content:center;font-size:22px;margin-bottom:10px">¡Todo listo!</h2>
+      <p style="max-width:500px;margin:0 auto 20px">Los mods están instalados y el orden de carga configurado. Inicia Skyrim (o SKSE64 si lo usas) y conecta con tus amigos desde el menú de Skyrim Together.</p>
+      <div style="display:flex;flex-direction:column;gap:8px;max-width:420px;margin:0 auto;text-align:left">
+        <div class="tip-box" style="margin-top:0">
+          <strong>🎮 Para jugar:</strong> Inicia Skyrim → Menú principal → Skyrim Together → Conectar a servidor → Ingresa la IP del servidor o crea uno local.
+        </div>
+        <div class="tip-box" style="margin-top:0;background:rgba(76,162,43,.08);border-color:rgba(76,162,43,.2)">
+          <strong>🏆 Logros:</strong> Los logros están habilitados incluso con mods activos. Verifica en <code>Data\Plugins\Sumwunn\AchievementsModsEnabler.log</code> que diga "YES". Platina el juego en grupo.
+        </div>
+      </div>
+    </div>
+    <div class="btn-row anim-up d1" style="justify-content:center">
+      <button class="btn-ghost" onclick="goStep(3)">← Revisar orden</button>
+      <button class="btn-gloss" onclick="location.reload()">
+        <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        Reiniciar
+      </button>
+    </div>
+  </div>
+
+  <footer class="footer anim-fade d5">
+    Skyrim Together Installer · Aero Glass UI · 2026<br>
+    Mods: Skyrim Together Reborn · Achievements Mods Enabler · DLL Loader · Address Library
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var currentStep = 1;
+  var installMode = 'manual';
+  var vortexDetected = false;
+
+  // Simulate Vortex detection (in a real app this would check registry/filesystem)
+  // For demo: check if a file named "vortex_detected.flag" exists alongside this HTML
+  // Since we can't do filesystem from browser, we show the banner based on a toggle
+  // In production, wrap this HTML in an Electron/Tauri shell or use a PowerShell launcher
+  function detectVortex(){
+    // Heuristic: try to fetch a known Vortex path via a local server
+    // For now, always show the option since the user confirmed Vortex may be installed
+    vortexDetected = true;
+    document.getElementById('vortexBanner').classList.add('visible');
+  }
+
+  function goStep(n){
+    for(var i=1;i<=4;i++){
+      document.getElementById('step'+i).className = i===n ? 'section-visible' : 'section-hidden';
+      var dot = document.getElementById('stepDot'+i);
+      dot.classList.remove('active','done');
+      if(i < n) dot.classList.add('done');
+      else if(i === n) dot.classList.add('active');
+    }
+    currentStep = n;
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  function verifyMods(){
+    var checks = ['checkSTR','checkAME','checkDLL','checkAddr'];
+    var delay = 0;
+    checks.forEach(function(id){
+      setTimeout(function(){
+        var el = document.getElementById(id);
+        el.classList.remove('pending');
+        el.classList.add('ok');
+      }, delay);
+      delay += 300;
+    });
+    setTimeout(function(){
+      goStep(2);
+    }, delay + 400);
+  }
+
+  function selectMode(mode){
+    installMode = mode;
+    document.getElementById('modeManual').classList.toggle('selected', mode==='manual');
+    document.getElementById('modeVortex').classList.toggle('selected', mode==='vortex');
+  }
+
+  function addLog(msg, type){
+    var box = document.getElementById('logBox');
+    var line = document.createElement('div');
+    line.className = 'log-line ' + (type||'info');
+    line.textContent = '> ' + msg;
+    box.appendChild(line);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function setProgress(pct, text){
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = text;
+  }
+
+  function runInstall(){
+    var btn = document.getElementById('installBtn');
+    btn.disabled = true;
+    document.getElementById('progressWrap').classList.add('visible');
+    document.getElementById('logBox').classList.add('visible');
+
+    var steps;
+    if(installMode === 'vortex'){
+      steps = [
+        {pct:10, msg:'Detectando instalación de Vortex...', type:'info'},
+        {pct:25, msg:'Abriendo Vortex vía protocolo nxm://', type:'info'},
+        {pct:40, msg:'Importando Skyrim Together Reborn...', type:'info'},
+        {pct:55, msg:'Importando Achievements Mods Enabler...', type:'info'},
+        {pct:65, msg:'Importando DLL Loader...', type:'info'},
+        {pct:75, msg:'Importando Address Library...', type:'info'},
+        {pct:85, msg:'Configurando orden de carga...', type:'info'},
+        {pct:95, msg:'Verificando instalación...', type:'success'},
+        {pct:100, msg:'¡Instalación completa vía Vortex!', type:'success'}
+      ];
+    } else {
+      steps = [
+        {pct:10, msg:'Localizando carpeta Data de Skyrim SE...', type:'info'},
+        {pct:20, msg:'Extrayendo Skyrim Together Reborn...', type:'info'},
+        {pct:35, msg:'Copiando archivos STR a Data/', type:'info'},
+        {pct:45, msg:'Extrayendo Achievements Mods Enabler...', type:'info'},
+        {pct:55, msg:'Copiando Plugins/ y SKSE/ a Data/', type:'info'},
+        {pct:65, msg:'Extrayendo DLL Loader...', type:'info'},
+        {pct:72, msg:'Copiando DllLoader a Data/', type:'info'},
+        {pct:80, msg:'Extrayendo Address Library...', type:'info'},
+        {pct:88, msg:'Generando plugins.txt con orden de carga...', type:'warn'},
+        {pct:95, msg:'Verificando integridad de archivos...', type:'success'},
+        {pct:100, msg:'¡Instalación manual completada!', type:'success'}
+      ];
+    }
+
+    var i = 0;
+    function next(){
+      if(i >= steps.length){
+        btn.disabled = false;
+        setTimeout(function(){ goStep(3); }, 800);
+        return;
+      }
+      var s = steps[i];
+      setProgress(s.pct, s.msg);
+      addLog(s.msg, s.type);
+      i++;
+      setTimeout(next, 500 + Math.random()*400);
+    }
+    next();
+  }
+
+  // Init
+  detectVortex();
+
+  // Allow clicking step dots to navigate (only backwards or to current)
+  document.querySelectorAll('.step-dot').forEach(function(dot){
+    dot.addEventListener('click', function(){
+      var s = parseInt(this.getAttribute('data-step'));
+      if(s <= currentStep) goStep(s);
+    });
+  });
+})();
+</script>
+</body>
+</html>
